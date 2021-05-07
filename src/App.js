@@ -62,22 +62,25 @@ class Game extends React.Component {
             }],
             stepNumber: 0,
             xIsNext: true,
+            selectedButton: null,
         };
     }
 
     handleClick(i) {
-        const history = this.state.history.slice(0, this.state.stepNumber + 1);
-        const current = history[history.length - 1];
-        const squares = current.squares.slice();
-        if (calculateWinner(squares) || squares[i]) {
+        const historyArr = this.state.history.slice(0, this.state.stepNumber + 1);
+        const currentMap = historyArr[historyArr.length - 1];
+        const squaresArr = currentMap.squares.slice();
+        const position = null;
+        if (calculateWinner(squaresArr) || squaresArr[i]) {
             return;
         }
-        squares[i] = this.state.xIsNext ? 'X' : 'O';
+        squaresArr[i] = this.state.xIsNext ? 'X' : 'O';
         this.setState({
-            history: history.concat([{
-                squares: squares,
+            history: historyArr.concat([{
+                squares: squaresArr,
+                position: i + 1,
             }]),
-            stepNumber: history.length,
+            stepNumber: historyArr.length,
             xIsNext: !this.state.xIsNext,
         });
     }
@@ -86,7 +89,12 @@ class Game extends React.Component {
         this.setState({
             stepNumber: step,
             xIsNext: (step % 2) === 0,
+            selectedButton: step,
         });
+    }
+
+    buttonSelected = selectedButton => ev => {
+        this.setState({selectedButton: selectedButton,})
     }
 
     render() {
@@ -96,11 +104,13 @@ class Game extends React.Component {
 
         const moves = history.map((step, move) => {
             const desc = move ?
-                'Перейти к ходу #' + move :
+                'Перейти к ходу #' + move + ' (ячейка ' + step.position + ')' :
                 'К началу игры';
             return (
                 <li key={move}>
-                    <button onClick={() => this.jumpTo(move)}>{desc}</button>
+                    <button className={["button", move === this.state.selectedButton ? 'selected' : ''].join(" ")}
+                            onClick={() => this.jumpTo(move)}
+                            type="button">{desc}</button>
                 </li>
             );
         });
