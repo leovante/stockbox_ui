@@ -59,10 +59,12 @@ class Game extends React.Component {
         this.state = {
             history: [{
                 squares: Array(9).fill(null),
+                stepNumber: 0,
             }],
             stepNumber: 0,
             xIsNext: true,
             selectedButton: null,
+            order: 'Прямая сортировка',
         };
     }
 
@@ -78,6 +80,7 @@ class Game extends React.Component {
         this.setState({
             history: historyArr.concat([{
                 squares: squaresArr,
+                stepNumber: historyArr.length,
                 position: i + 1,
             }]),
             stepNumber: historyArr.length,
@@ -93,24 +96,36 @@ class Game extends React.Component {
         });
     }
 
-    buttonSelected = selectedButton => ev => {
-        this.setState({selectedButton: selectedButton,})
+    switchOrder(i) {
+        this.setState(
+            i === 'Прямая сортировка' ? {order: 'Обратная сортировка'} : {order: 'Прямая сортировка'}
+        )
     }
 
     render() {
-        const history = this.state.history;
+        let history = this.state.history;
         const current = history[this.state.stepNumber];
         const winner = calculateWinner(current.squares);
+        const order = this.state.order;
+
+        if (order === 'Обратная сортировка') {
+            history = history.reverse();
+        }
+
+        const switchBtn = this.state.stepNumber ?
+            <button className={"button"} onClick={() => this.switchOrder(order)}>{order}</button> :
+            <div style={{height: 24, width: 220}}></div>;
 
         const moves = history.map((step, move) => {
-            const desc = move ?
-                'Перейти к ходу #' + move + ' (ячейка ' + step.position + ')' :
+            const desc = step.position ?
+                'Перейти к ходу #' + step.stepNumber + ' (ячейка ' + step.position + ')' :
                 'К началу игры';
             return (
                 <li key={move}>
-                    <button className={["button", move === this.state.selectedButton ? 'selected' : ''].join(" ")}
-                            onClick={() => this.jumpTo(move)}
-                            type="button">{desc}</button>
+                    <button
+                        className={["button", step.stepNumber === this.state.selectedButton ? 'selected' : ''].join(" ")}
+                        onClick={() => this.jumpTo(step.stepNumber)}
+                        type="button">{desc}</button>
                 </li>
             );
         });
@@ -122,8 +137,9 @@ class Game extends React.Component {
             status = 'Следующий ход: ' + (this.state.xIsNext ? 'X' : 'O');
         }
 
+
         return (
-            <div className="game">
+            <div className="game" style={{margin: 50}}>
                 <div className="game-board">
                     <Board
                         squares={current.squares}
@@ -132,7 +148,18 @@ class Game extends React.Component {
                 </div>
                 <div className="game-info">
                     <div>{status}</div>
+                    <ol>{switchBtn}</ol>
                     <ol>{moves}</ol>
+                </div>
+
+                <div style={{padding: 10, margin: 10}}>
+                    <h4 style={{margin: 0}}>GitHub:</h4>
+                    <div>
+                        <a href={"https://github.com/leovante/stockbox_ui"}>https://github.com/leovante/stockbox_ui</a>
+                    </div>
+                    <div>
+                        <a href={"https://github.com/leovante/stockbox"}>https://github.com/leovante/stockbox</a>
+                    </div>
                 </div>
             </div>
         );
